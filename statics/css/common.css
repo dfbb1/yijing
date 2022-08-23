@@ -1,0 +1,96 @@
+::-webkit-scrollbar {
+    width: 3px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-track {
+    border-radius: 0;
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.key-desc div:hover {
+    color: green;
+    cursor: pointer;
+}
+
+.key-desc div {
+    line-height: 1.5rem;
+}
+
+.key-t2 {
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+.key-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+.child-frame {
+    padding: 1rem 1rem 1rem 1rem;
+}
+.desc pre {
+    white-space:pre-wrap;
+    white-space:-moz-pre-wrap;
+    white-space:-o-pre-wrap;
+    word-wrap:break-word;
+}
+
+.taiChi:before, .taiChi:after {
+    position: absolute;
+    width: 3vh;
+    height: 3vh;
+}
+
+.taiChi:before {
+    content: "";
+    background: #000;
+    border: 4.5vh solid white;
+    top: 0;
+    left: 50%;
+    border-radius: 100%;
+}
+
+.taiChi:after {
+    content: "";
+    background: #fff;
+    border: 4.5vh solid black;
+    left: 50%;
+    bottom: 0;
+    border-radius: 100%;
+}
+
+@keyframes spin {
+    from{
+        transform: rotate(0deg);
+    }
+    to{
+        transform: rotate(360deg);
+    }
+}
+
+.taiChi {
+    background:#fff;
+    width:12vh;
+    height:24vh;
+    border-color:black;
+    border-style:solid;
+    border-width:2px 12vh 2px 2px;
+    border-radius:100%;
+    position:relative;
+    animation-duration: 8s;/*每3s转一圈*/
+    animation-name: spin;
+    animation-iteration-count: infinite;/*无限制循环*/
+    animation-timing-function: linear;/*匀速转动*/
+}
+
+.taiChi:hover {
+    /*animation: none;*/
+}

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<!--suppress NonAsciiCharacters -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>易经</title>
+    <script src="../js/vue.global.js"></script>
+    <link rel="stylesheet" href="../statics/css/common.css">
+    <link rel="stylesheet" href="../statics/css/index.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            border: 0;
+            background-color: #e7d1b3;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="content">
+        <div class="utils">
+            <span class="btn" v-if="keyMod" @click="keyMod = false"> 返回 </span>
+            <span class="btn" v-if="!keyMod" @click="keyMod = true"> 检索模式 </span>
+        </div>
+
+        <div class="key-mod" v-if="keyMod">
+            <span v-for="(v, k) in wordMap" class="words" @click="detail(k)">
+                {{ k }}
+            </span>
+        </div>
+
+        <template v-if="!keyMod">
+            <div class="zugua" @drop="dropGua($event)" @dragover.prevent @click="show64yao">
+                <div class="gua6" v-for="(guashu, index) in liuyao" >
+                    <div v-if="(guashu & 4) === 4" class="yao-yang"></div>
+                    <div v-else class="yao-yin"></div>
+                    <div v-if="(guashu & 2) === 2" class="yao-yang"></div>
+                    <div v-else class="yao-yin"></div>
+                    <div v-if="(guashu & 1) === 1" class="yao-yang"></div>
+                    <div v-else class="yao-yin"></div>
+                </div>
+            </div>
+
+            <div class="gua-total">
+                <div class="gua3"
+                     :style="'left: ' + (baguaLeft[index] * 12) + 'vh' + ';' + 'top: ' + (baguaTop[index] * 12) + 'vh' + ';' + 'transform: rotate(' + (45 * index) + 'deg)' + ';' + '-ms-transform: rotate('+ (45 * index) +'deg);' + '-webkit-transform: rotate(' + (45 * index) + 'deg);' "
+                     v-for="(guashu, index) in baguaNum" @click="yaoci(guashu)" draggable="true" @dragstart="dragGuaStart($event, guashu)" @dragend="dragGuaEnd($event, guashu)">
+                    <div v-if="(guashu & 4) === 4" class="yao-yang"></div>
+                    <div v-else class="yao-yin"></div>
+                    <div v-if="(guashu & 2) === 2" class="yao-yang"></div>
+                    <div v-else class="yao-yin"></div>
+                    <div v-if="(guashu & 1) === 1" class="yao-yang"></div>
+                    <div v-else class="yao-yin"></div>
+                </div>
+                <div class="taiChi" @drop="dropGua($event)" @dragover.prevent @click="randomGua"></div>
+            </div>
+        </template>
+
+        <template v-if="showMeaning">
+            <div class="meaning" v-html="meaningText"></div>
+        </template>
+
+    </div>
+
+    <div class="sidebar">
+        <div class="b-head"></div>
+        <div v-if="showDetail" class="show-detail">
+            <template v-if="showDetail.h">
+                <iframe id="side-iframe" class="side-qian" :src="showDetail.h"></iframe>
+            </template>
+            <template v-if="!showDetail.h">
+                <div class="desc">
+                    <div class="key-title">
+                        {{showKey}}
+                    </div>
+                    <div class="key-desc" v-html="showDetail.d">
+                    </div>
+                </div>
+                <div v-if="yy['阳'].includes(showKey)">
+                    阳属
+                </div>
+                <div v-if="yy['阴'].includes(showKey)">
+                    阴属
+                </div>
+                <div v-if="showDetail.i" style="width: 100%">
+                    <img class="detail-img" :src="'../statics/imgs/' + showDetail.i" :alt="showKey"/>
+                </div>
+                <div class="detail-rel" v-if="showDetail.l" v-html="showDetail.l">
+                </div>
+            </template>
+        </div>
+        <div v-if="!showDetail" class="side-help">
+            <h3>使用说明：</h3>
+            <div>1. 点击三爻，右侧可查看详情</div>
+            <div>2. 拖拽三爻到太极图或虚线框内可组卦，右侧展示相关信息</div>
+            <div>3. 检索模式列出部分特殊词语，点击可展示相关信息</div>
+            <div>4. 右侧文字如果鼠标悬浮后呈现绿色，点击后左下方可展示部分古文涵义</div>
+            <div>5. 点击太极图，随机生成一卦</div>
+            <div>如需显示当前提示，请刷新页面</div>
+        </div>
+    </div>
+
+
+</div>
+<script>
+    const app = {
+        data() {
+            return {
+                // ======== 状态控制 ======== //
+                keyMod: false,
+                showMeaning: false,
+                meaningText: '',
+                // 六爻，拖拽区域展示
+                liuyao: [],
+                liuyaoTemp: 0,
+                showDetail: '',
+                showKey: '',
+                // 八卦，右旋
+                baguaNum: [5, 0, 3, 7, 2, 4, 1, 6],
+                baguaLeft: {0: 2, 1: 3.5, 2: 4.1, 3: 3.5, 4: 2, 5: 0.5, 6: -0.1, 7: 0.5},
+                baguaTop: {0: -0.1, 1: 0.5, 2: 2, 3: 3.5, 4: 4.1, 5: 3.5, 6: 2, 7: 0.5},
+                // ======== 数据存储 ======== //
+                // 十天干
+                tenTG: ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
+                // 十二地支
+                tweDZ: ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'],
+                // 五行
+                wuxing: ['金', '木', '水', '火', '土'],
+                // 方位
+                fangwei: ['东', '南', '西', '北', '中'],
+                // 四时
+                sishi: ['春', '夏', '秋', '冬'],
+                baguaStr: ['离', '坤', '兑', '乾', '坎', '艮', '震', '巽'],
+                baguaMap: {
+                    5: '离',
+                    0: '坤',
+                    3: '兑',
+                    7: '乾',
+                    2: '坎',
+                    4: '艮',
+                    1: '震',
+                    6: '巽',
+                },
+                bwMap: {
+                    '五行': '<div>古人认为宇宙是由金、木、水、火、土这五种最基本的物质构成，宇宙间各种事物和现象的发展都是这五种物质运动和交互作用的结果。</div><div>古代劳动人民通过长期的接触和观察，认识到五行中的每一行都有不同的性能。古人基于这种认识，把宇宙间各种事物分别归属于五行，因此在概念上，已经不是木、火、土、金、水本身，而是一大类在特性上可相比拟的各种事物、现象所共有的抽象性能。</div>',
+                },
+                wordMap: {
+                    '甲': {'d': '是拆的意思，即指万物剖符而出',},
+                    '乙': {'d': '是轧的意思，表示初生的样子',},
+                    '丙': {'d': '是炳然之意，即万物炳然著见', },
+                    '丁': {'d': '是强的意思，意为万物丁壮',},
+                    '戊': {'d': '为茂盛之意',},
+                    '己': {'d': '是纪的意思，指万物有形可纪识', },
+                    '庚': {'d': '为坚实之意，指万物收敛有实',},
+                    '辛': {'d': '是新的意思，指万物初新皆收成',},
+                    '壬': {'d': '即任，指阳气任养万物于下',},
+                    '癸': {'d': '是揆（kuí）的意思，指万物可揆度',},
+
+
+                    '子': {'d': '为孳，指万物孳萌于既动之阳气下',},
+                    '丑': {'d': '是纽、系之意，指万物继萌而长',},
+                    '寅': {'d': '是移、引之意，指物芽稍出',},
+                    '卯': {'d': '为冒，指物生长壮大',},
+                    '辰': {'d': '是震的意思，物经震动而长',},
+                    '巳': {'d': '是起、已的意思，指万物至此已毕尽而起',},
+                    '午': {'d': '午是仵的意思，指万物盛大枝叶密布',},
+                    '未': {'d': '是味的意思，指六月滋味也，此时阴气已长，万物稍衰，体暧昧',},
+                    '申': {'d': '指万物的身体已长成',},
+                    '酉': {'d': '是老的意思，指万物老极而成熟',},
+                    '戌': {'d': '是灭的意思，指万物皆衰灭',},
+                    '亥': {'d': '是核的意思，指万物收藏皆坚核',},
+
+                    '木': {'d': '“木曰曲直”，意思是木具有生长、升发的特性，代表生长、升发、条达、舒畅的功能，在人体为肝。'},
+                    '金': {'d': '“金曰从革”，意思是金具有肃杀、变革的特性，代表沉降、肃杀、收敛等性质，在人体为肺。'},
+                    '水': {'d': '“水曰润下”，意思是水具有滋润、向下的特性，代表了滋润、下行、寒凉、闭藏的性质，在人体为肾。'},
+                    '土': {'d': '“土爰稼穑”，意思是指土具有种植庄稼，生化万物的特性，代表了生化、承载、受纳等性质，在人体为脾。'},
+                    '火': {'d': '“火曰炎上”，意思是火具有发热、向上的特性，代表了温热、向上等性质，在人体为心。'},
+
+                    '占': {'d': '占筮，注重“心诚则灵”。', 'l': '<div>占筮的原则：</div><ul><li>展示前一晚早睡，不做任何事。</li><li>净身，例如洗手、漱口。</li><li>晚上11点以后不卜，因为在两日交接时，天地混沌未明。</li><li>以玩笑试之，或在细小嘈杂、卧室厕所等环境下不卜。</li><li>心未定、心不诚不卜，奸秽淫盗之事不卜。</li><li>一事只一占，今日占明日又占，不灵。</li><li>唯挚诚可感动神明，故无事切勿试卦。</li><li>心意已决，可以智慧判断不卜。以占卜术赌博坐吃山空不卜。</li><li>最好在神案或无杂的书桌上进行，占卜之事，简洁的写在红纸上。</li><li>占卦需客观，且要心定，不受外物影响。</li></ul>'},
+
+                    '九': {'d': '待定'},
+                    '吉': {'d': '待定'},
+                },
+                // 八卦详解
+                guaMap: {
+                    '离': {'d': '离虽为目又为雉。'},
+                    '坤': {'d': '坤为臣兮腹与牛，卦属老阴体至柔。'},
+                    '兑': {'d': '兑为口羊女之流。'},
+                    '乾': {'d': '乾为君兮首与马，卦属老阳体至刚。'},
+                    '坎': {'d': '坎虽为耳又为豕。'},
+                    '艮': {'d': '艮为手狗男之详。'},
+                    '震': {'d': '震卦但为龙与足，三卦皆名曰少阳。'},
+                    '巽': {'d': '巽卦但为鸡与股，少阴三卦皆相眸。'},
+                },
+                // 六十四卦详解
+                gua64Map: {
+                    '乾': {'h': './gua64/g63.html'},
+                    '姤': {'h': './gua64/g62.html'},
+                    '天火同人': {'h': './gua64/g61.html'},
+                    '遁': {'h': './gua64/g60.html'},
+                    '履': {'h': './gua64/g59.html'},
+                    '讼': {'h': './gua64/g58.html'},
+                    '天雷无妄': {'h': './gua64/g57.html'},
+                    '天地否': {'h': './gua64/g56.html'},
+                    '风天小畜': {'h': './gua64/g55.html'},
+                    '风地观': {'h': './gua64/g48.html'},
+                    '火天大有': {'h': './gua64/g47.html'},
+                    '火雷噬嗑': {'h': './gua64/g41.html'},
+
+                    '山天大畜': {'h': './gua64/g39.html'},
+                    '山风蛊': {'h': './gua64/g38.html'},
+                    '山火贲': {'h': './gua64/g37.html'},
+                    '蒙': {'h': './gua64/g34.html'},
+                    '山雷颐': {'h': './gua64/g33.html'},
+                    '山地剥': {'h': './gua64/g32.html'},
+                    '夬': {'h': './gua64/g31.html'},
+                    '泽风大过': {'h': './gua64/g30.html'},
+                    '泽雷随': {'h': './gua64/g25.html'},
+                    '需': {'h': './gua64/g23.html'},
+
+                    '坎为水': {'h': './gua64/g18.html'},
+                    '屯': {'h': './gua64/g17.html'},
+                    '比': {'h': './gua64/g16.html'},
+
+                    '雷地豫': {'h': './gua64/g8.html'},
+                    '地天泰': {'h': './gua64/g7.html'},
+                    '地山谦': {'h': './gua64/g4.html'},
+                    '地泽临': {'h': './gua64/g3.html'},
+                    '师': {'h': './gua64/g2.html'},
+                    '地雷复': {'h': './gua64/g1.html'},
+                    '坤': {'h': './gua64/g0.html'},
+                },
+                // 六十四卦数字映射
+                gua64NumMap: {
+                    63: '乾',
+                    62: '姤',
+                    61: '天火同人',
+                    60: '遁',
+                    59: '履',
+                    58: '讼',
+                    57: '天雷无妄',
+                    56: '天地否',
+                    55: '风天小畜',
+                    48: '风地观',
+                    47: '火天大有',
+                    41: '火雷噬嗑',
+                    39: '山天大畜',
+                    38: '山风蛊',
+                    37: '山火贲',
+                    34: '蒙',
+                    33: '山雷颐',
+                    32: '山地剥',
+                    31: '夬',
+                    30: '泽风大过',
+                    25: '泽雷随',
+                    23: '需',
+                    18: '坎为水',
+                    17: '屯',
+                    16: '比',
+                    8: '雷地豫',
+                    7: '地天泰',
+                    4: '地山谦',
+                    3: '地泽临',
+                    2: '师',
+                    1: '地雷复',
+                    0: '坤',
+                },
+                // 阴阳五行
+                yy: {
+                    '阳': ['甲', '丙', '戊', '庚', '壬', '子', '寅', '辰', '午', '申', '戌'],
+                    '阴': ['乙', '丁', '己', '辛', '癸', '丑', '卯', '巳', '未', '酉', '亥'],
+                },
+                wx: {
+                    '金': '',
+                    '木': '',
+                    '水': '',
+                    '火': '',
+                    '土': '',
+                }
+            }
+        },
+        methods: {
+            detail(key) {
+                this.showKey = key;
+                this.showDetail = this.wordMap[key];
+            },
+            yaoci(guashu) {
+                this.showKey = this.baguaMap[guashu];
+                this.showDetail = this.guaMap[this.baguaMap[guashu]];
+            },
+            dragGuaStart(e, guashu) {
+                this.liuyaoTemp = guashu;
+            },
+            dragGuaEnd(e, guashu) {
+
+            },
+            dropGua(e) {
+                if (this.liuyao.length >= 2) {
+                    this.liuyao = [this.liuyaoTemp];
+                } else {
+                    this.liuyao.push(this.liuyaoTemp);
+                }
+                // 六十四卦，触发详解
+                if (this.liuyao.length === 2) {
+                    this.show64yao();
+                }
+            },
+            show64yao() {
+                let guashu64 = (this.liuyao[0] << 3) + this.liuyao[1];
+                this.showKey = this.gua64NumMap[guashu64];
+                this.showDetail = this.gua64Map[this.showKey];
+            },
+            randomGua() {
+                let guashu64 = Math.floor(Math.random()*64);
+                this.liuyao = [];
+                this.liuyao.push(guashu64 >> 3);
+                this.liuyao.push(guashu64 & 7);
+                this.showKey = this.gua64NumMap[guashu64];
+                this.showDetail = this.gua64Map[this.showKey];
+            },
+            searchText(text) {
+                this.showMeaning = false;
+                let segmenter = new Intl.Segmenter('cn', {granularity: 'word' });
+                let segments = segmenter.segment(text);
+                let words = []
+                for (let word of segments) {
+                    if (word.isWordLike && this.wordMap[word.segment]) {
+                        words.push('<span>' + word.segment + ":</span>" + this.wordMap[word.segment]['d']);
+                    }
+                }
+                if (words.length > 0) {
+                    this.showMeaning = true;
+                    this.meaningText = words.join('。') + "。";
+                }
+            }
+
+        },
+        mounted() {
+            let that = this;
+            for (let item of this.wuxing) {
+                this.wordMap[item]['l'] = this.bwMap['五行'];
+            }
+
+            window.addEventListener('message', (e) => {
+                that.searchText(e.data);
+            })
+        },
+        watch: {
+            showDetail() {
+                this.showMeaning = false;
+            }
+        }
+
+    }
+
+    Vue.createApp(app).mount('#app')
+</script>
+</body>
+</html>

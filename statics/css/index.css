@@ -1,0 +1,206 @@
+.words {
+    border: 1px solid gray;
+    padding: 1px 1rem;
+    margin: 0 3px;
+    cursor: pointer;
+}
+
+.words:hover {
+    background-color: #e6f5f5;
+    border: 1px solid #dc5f39;
+}
+
+/* 左侧主题内容 */
+
+.content, .sidebar {
+    display: inline-block;
+    float: left;
+    height: 96vh;
+    margin: 0 0;
+}
+
+.content {
+    width: 68%;
+    padding: 2vh 1vw;
+    background-color: #fff;
+    line-height: 3rem;
+}
+
+.tiangan {
+    height: 3rem;
+}
+
+/* 顶部工具栏 */
+
+.utils {
+    height: 4rem;
+}
+
+.utils .btn {
+    border: 1px solid #ff4d4d;
+    cursor: pointer;
+    user-select: none;
+    width: 6rem;
+    display: inline-block;
+    line-height: 1.5rem;
+    float: right;
+    text-align: center;
+    border-radius: 5px;
+    background-color: #ffebd0;
+}
+
+.utils .btn:hover {
+    background-color: #e5fdfd;
+    border: 1px solid #0f4900;
+}
+
+/* 右侧词义解析栏*/
+
+.sidebar {
+    width: 26.9%;
+    /*background-color: #e7d1b3;*/
+    padding: 2vh 1vw 2vh 2vw;
+    overflow-y: scroll;
+    position: relative;
+}
+
+.desc {
+    margin: auto;
+    text-align: center;
+}
+
+.b-head {
+    height: 1rem;
+}
+
+.detail-img {
+    width: 10vw;
+    display: block;
+    margin: auto;
+}
+
+.key-mod {
+    line-height: 3rem;
+}
+
+.key-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.detail-rel {
+    padding: 1rem 1rem;
+    line-height: 1.5rem;
+    background-color: #e7ddcf;
+    border: 1px dashed black;
+    border-radius: 10px;
+    margin-top: 2rem;
+}
+
+.detail-rel div {
+    text-indent: 2rem;
+}
+
+.key-desc {
+    text-align: left;
+}
+
+.key-t2 {
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+.side-qian {
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    position: absolute;
+    border: 0;
+}
+
+.side-help div {
+    margin: 2rem 0;
+    padding: 0 2rem 0 0;
+}
+
+/* 通用 */
+
+.yao-yang, .yao-yin {
+    width: 12vh;
+    display: inline-block;
+    margin: 0.8rem 0;
+    height: 0.8rem;
+}
+
+.yao-yang {
+    background-color: #000;
+}
+
+.yao-yin {
+    background: linear-gradient(to right, #181818 0, #181818 45%, transparent 45%, transparent 55%, #181818 55%, #181818 100%);
+}
+
+.gua3 div {
+    display: block;
+}
+
+.gua3 {
+    position: absolute;
+    cursor: pointer;
+}
+.gua3:hover .yao-yin {
+    background: linear-gradient(to right, #000 0, #000 45%, transparent 45%, transparent 55%, #000 55%, #000 100%);
+}
+
+.gua3:hover .yao-yang {
+    background-color: #C0C0C0;
+}
+
+.gua6 div {
+    display: block;
+}
+
+.gua6 {
+    cursor: pointer;
+}
+
+.gua-total {
+    width: 60vh;
+    height: 60vh;
+    margin: auto;
+    position: relative;
+    top: 10vh;
+}
+
+.zugua {
+    position: absolute;
+    left: 60vw;
+    top: 10vh;
+    height: 18vh;
+    width: 14vh;
+    padding-left: 2vh;
+    border: 1px dashed black;
+}
+
+.taiChi {
+    position: absolute;
+    left: 18vh;
+    top: 16.5vh;
+    cursor: pointer;
+}
+
+.meaning {
+    width: 68%;
+    border-top: 1px dashed #e7d1b3;
+    height: 4rem;
+    position: absolute;
+    bottom: 0;
+    padding-right: 2rem;
+}
+
+.meaning span {
+    font-weight: bold;
+    margin-right: 1rem;
+    margin-left: 2rem;
+}
